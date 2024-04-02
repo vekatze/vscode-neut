@@ -1,0 +1,25 @@
+{
+  "name": "vscode-neut",
+  "displayName": "vscode-neut",
+  "description": "A language support for the Neut programming language.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "neut",
+      "aliases": ["Neut", "neut"],
+      "extensions": [".nt"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "neut",
+      "scopeName": "source.neut",
+      "path": "./syntaxes/neut.tmLanguage.json"
+    }]
+  }
+}
