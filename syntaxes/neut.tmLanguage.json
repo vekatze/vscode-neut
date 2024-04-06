@@ -1,32 +1,96 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "Neut",
-	"patterns": [
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
-	],
-	"repository": {
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.neut",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.neut",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.neut",
-					"match": "\\\\."
-				}
-			]
-		}
-	},
-	"scopeName": "source.neut"
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Neut",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constructors"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-dash.neut"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword",
+          "begin": "\\b(define|inline|data|constant|resource)\\s([^(:<{]+)",
+          "end": ":|<|{|\\(|\\[",
+          "beginCaptures": {
+            "2": {
+              "name": "support.function"
+            }
+          }
+        },
+        {
+          "match": "\\b(arrow|attach|bind|case|default|detach|else|else-if|exact|external|foreign|function|if|import|in|introspect|let|match|nominal|of|on|tie|try|use|when|with)\\b",
+          "name": "keyword.neut"
+        },
+        {
+          "match": "\\b(assert|magic|target-arch|target-os|target-platform)\\b",
+          "name": "keyword.builtin.neut"
+        },
+        {
+          "match": "\\b(admit)\\b",
+          "name": "support"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type",
+          "match": "\\b(tau)\\b"
+        }
+      ]
+    },
+    "constructors": {
+      "patterns": [
+        {
+          "name": "support.type",
+          "match": "\\b(_*[A-Z][^\\s(\\.]*)"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.neut",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.neut",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "support",
+          "match": "(->|:|=>|=|_|,|;|:|::|!|&|\\?|\\*|\\+|\\|)"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.neut"
 }

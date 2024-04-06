@@ -1,25 +1,82 @@
 {
   "name": "vscode-neut",
-  "displayName": "vscode-neut",
-  "description": "A language support for the Neut programming language.",
   "version": "0.0.1",
+  "author": "vekatze",
+  "publisher": "vekatze",
   "engines": {
     "vscode": "^1.87.0"
   },
+  "license": "SEE LICENSE IN license.md",
+  "displayName": "Neut Language Support",
+  "description": "A language support for the Neut programming language.",
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Linters",
+    "Formatters",
+    "Language Packs"
   ],
+  "keywords": [
+    "neut",
+    "lsp",
+    "syntax",
+    "indent",
+    "completion"
+  ],
+  "main": "./dist/extension",
+  "activationEvents": [
+    "workspaceContains:module.ens"
+  ],
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "@types/vscode": "^1.87.0",
+    "esbuild": "^0.20.2",
+    "typescript": "^5.4.4"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vekatze/vscode-neut.git"
+  },
   "contributes": {
-    "languages": [{
-      "id": "neut",
-      "aliases": ["Neut", "neut"],
-      "extensions": [".nt"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "neut",
-      "scopeName": "source.neut",
-      "path": "./syntaxes/neut.tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "neut",
+        "aliases": [
+          "Neut",
+          "neut"
+        ],
+        "extensions": [
+          ".nt"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "neut",
+        "scopeName": "source.neut",
+        "path": "./syntaxes/neut.tmLanguage.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "shift+\\",
+        "command": "extension.insertVerticalBar"
+      },
+      {
+        "key": "enter",
+        "command": "extension.newlineAndIndent",
+        "when": "editorTextFocus && !editorReadonly && !suggestWidgetVisible"
+      }
+    ]
   }
 }
