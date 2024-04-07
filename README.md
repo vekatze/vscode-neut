@@ -1,3 +1,5 @@
+[![marketplace](https://img.shields.io/visual-studio-marketplace/v/vekatze.vscode-neut?label=Marketplace&color=informational&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=vekatze.vscode-neut)
+
 # Neut Language Support for Visual Studio Code
 
 This extension adds support for the [Neut](https://vekatze.github.io/neut) programming language.
