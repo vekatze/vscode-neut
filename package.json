@@ -1,6 +1,6 @@
 {
   "name": "vscode-neut",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "vekatze",
   "publisher": "vekatze",
   "engines": {
@@ -70,12 +70,13 @@
     "keybindings": [
       {
         "key": "shift+\\",
-        "command": "extension.insertVerticalBar"
+        "command": "extension.insertVerticalBar",
+        "when": "editorLangId == neut"
       },
       {
         "key": "enter",
         "command": "extension.newlineAndIndent",
-        "when": "editorTextFocus && !editorReadonly && !suggestWidgetVisible"
+        "when": "editorTextFocus && !editorReadonly && !suggestWidgetVisible && editorLangId == neut"
       }
     ]
   }
