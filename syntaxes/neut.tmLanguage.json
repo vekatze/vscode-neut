@@ -34,24 +34,23 @@
       "patterns": [
         {
           "name": "keyword",
-          "begin": "\\b(define|inline|data|constant|resource)\\s([^(:<{]+)",
-          "end": ":|<|{|\\(|\\[",
-          "beginCaptures": {
-            "2": {
+          "match": "(\\s|^)(define|inline|data|constant|resource)\\s([^(:<{]+)",
+          "captures": {
+            "3": {
               "name": "support.function"
             }
           }
         },
         {
-          "match": "\\b(arrow|attach|bind|case|default|detach|else|else-if|exact|external|foreign|function|if|import|in|introspect|let|match|nominal|of|on|tie|try|use|when|with)\\b",
+          "match": "(\\s|^)(arrow|attach|bind|case|default|detach|else|else-if|exact|external|foreign|function|if|import|in|introspect|let|match|nominal|of|on|tie|try|use|when|with)(\\s|$)",
           "name": "keyword.neut"
         },
         {
-          "match": "\\b(assert|magic|target-arch|target-os|target-platform)\\b",
+          "match": "(\\s|^)(assert|magic|target-arch|target-os|target-platform)(\\s|$)",
           "name": "keyword.builtin.neut"
         },
         {
-          "match": "\\b(admit)\\b",
+          "match": "(\\s|^)(admit)(\\s|$)",
           "name": "support"
         }
       ]
@@ -60,7 +59,7 @@
       "patterns": [
         {
           "name": "support.type",
-          "match": "\\b(tau)\\b"
+          "match": "(\\s|^)(tau)(\\s|$)"
         }
       ]
     },
@@ -68,7 +67,7 @@
       "patterns": [
         {
           "name": "support.type",
-          "match": "\\b(_*[A-Z][^\\s(\\.]*)"
+          "match": "(\\s|^)(_*[A-Z][^\\s(\\.]*)"
         }
       ]
     },
