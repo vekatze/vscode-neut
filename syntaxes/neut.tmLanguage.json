@@ -42,15 +42,15 @@
           }
         },
         {
-          "match": "(\\s|^)(arrow|attach|bind|case|default|detach|else|else-if|exact|external|foreign|function|if|import|in|introspect|let|match|nominal|of|on|tie|try|use|when|with)(\\s|$)",
+          "match": "(\\s|^)(attach|bind|box|case|catch|constant|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|in|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
           "name": "keyword.neut"
         },
         {
-          "match": "(\\s|^)(assert|magic|target-arch|target-os|target-platform)(\\s|$)",
+          "match": "(\\s|^)(assert|magic|include-text|static)(?=\\s|$)",
           "name": "keyword.builtin.neut"
         },
         {
-          "match": "(\\s|^)(admit)(\\s|$)",
+          "match": "(\\s|^)(admit)(?=\\s|$)",
           "name": "support"
         }
       ]
@@ -58,27 +58,42 @@
     "types": {
       "patterns": [
         {
-          "name": "support.type",
-          "match": "(\\s|^)(tau)(\\s|$)"
+          "name": "support.type.neut",
+          "match": "(\\s|^)(type|thread|meta|rune)(?=\\s|$)"
         }
       ]
     },
     "constructors": {
       "patterns": [
         {
-          "name": "support.type",
+          "name": "support.type.neut",
           "match": "(\\s|^)(_*[A-Z][^\\s(\\.]*)"
         }
       ]
     },
     "strings": {
-      "name": "string.quoted.double.neut",
-      "begin": "\"",
-      "end": "\"",
       "patterns": [
         {
-          "name": "constant.character.escape.neut",
-          "match": "\\\\."
+          "name": "string.quoted.double.neut",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.neut",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.backtick.neut",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape.neut",
+              "match": "\\\\."
+            }
+          ]
         }
       ]
     },

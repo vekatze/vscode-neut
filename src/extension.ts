@@ -9,7 +9,7 @@ import {
 let client: LanguageClient;
 
 const indentPattern =
-  /^((?!\/\/).)*(\{[^}\"'`]*|\([^)\"'`]*|\[[^\]\"'`]*|(let|try|tie|bind).+=\s*$)$/;
+  /^((?!\/\/).)*(\{[^}\"'`]*|\([^)\"'`]*|\[[^\]\"'`]*|(let|try|tie|bind|catch|pin).+=\s*$)$/;
 
 const outdentPattern = /^\s+in\s*$/;
 
