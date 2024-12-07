@@ -34,7 +34,7 @@
       "patterns": [
         {
           "name": "keyword",
-          "match": "(\\s|^)(define|inline|data|constant|resource)\\s([^(:<{]+)",
+          "match": "(\\s|^)(data|define|inline|resource)\\s([^(:<{]+)",
           "captures": {
             "3": {
               "name": "support.function"
@@ -42,7 +42,7 @@
           }
         },
         {
-          "match": "(\\s|^)(attach|bind|box|case|catch|constant|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|in|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
+          "match": "(\\s|^)(attach|bind|box|case|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|in|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
           "name": "keyword.neut"
         },
         {
@@ -59,7 +59,7 @@
       "patterns": [
         {
           "name": "support.type.neut",
-          "match": "(\\s|^)(type|thread|meta|rune)(?=\\s|$)"
+          "match": "(\\s|^)(type|thread|meta|rune|void|pointer)(?=\\s|$)"
         }
       ]
     },
