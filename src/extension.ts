@@ -6,164 +6,185 @@ import {
   ServerOptions,
 } from "vscode-languageclient/node";
 
-let client: LanguageClient;
+const OPEN = new Set(["(", "{", "[", "=", "<"]);
 
-const indentPattern =
-  /^((?!\/\/).)*(\{[^}\"'`]*|\([^)\"'`]*|\[[^\]\"'`]*|(let|letbox|letbox-T|try|tie|bind|catch|pin).+=\s*$)$/;
+const CLOSE = new Set([")", "}", "]", ";", ">"]);
 
-const outdentPattern = /^\s+in\s*$/;
+const MATCH: Record<string, string> = {
+  "(": ")",
+  "{": "}",
+  "[": "]",
+  "=": ";",
+  "<": ">",
+};
 
-const baseOffset = 2;
+const offset = 2;
 
-function trim(s: string): string {
-  return s.replace(/^(\s|\|)+/g, "");
+type Doc = vscode.TextDocument;
+
+function isArrow(line: string, i: number) {
+  return line[i] === ">" && i > 0 && ["=", "-"].includes(line[i - 1]);
 }
 
-function getIndentation(s: string): number {
-  return s.length - trim(s).length;
+function isColonEq(line: string, i: number) {
+  return line[i] === "=" && i > 0 && line[i - 1] === ":";
+}
+
+function lineStartsWithCloser(text: string): boolean {
+  const l = text.trimStart();
+  if (!l) {
+    return false;
+  }
+  const c = l[0];
+  if ([")", "}", "]", ";", ">"].includes(c)) {
+    return true;
+  }
+  return false;
+}
+
+function firstSignificantCharacterIndex(line: string): number {
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch !== " " && ch !== "|") {
+      return i;
+    }
+  }
+  return line.length;
+}
+
+function findParentIndent(doc: Doc, lineNum: number, col: number): number {
+  let stack: string[] = [];
+
+  for (let ln = lineNum; ln >= 0; ln--) {
+    let text = doc.lineAt(ln).text;
+    const comment = text.indexOf("//");
+    if (comment >= 0) text = text.slice(0, comment);
+
+    let i = ln === lineNum ? col - 1 : text.length - 1;
+    while (i >= 0) {
+      const ch = text[i];
+
+      if (isArrow(text, i)) {
+        i -= 2;
+        continue;
+      }
+      if (isColonEq(text, i)) {
+        i -= 2;
+        continue;
+      }
+
+      if (CLOSE.has(ch)) {
+        stack.unshift(ch);
+        i--;
+        continue;
+      }
+
+      if (OPEN.has(ch)) {
+        while (stack[0] === ";" && ch !== "=") {
+          stack.shift();
+        }
+        if (stack[0] && MATCH[ch] === stack[0]) {
+          stack.shift();
+          i--;
+          continue;
+        }
+        return firstSignificantCharacterIndex(doc.lineAt(ln).text);
+      }
+      i--;
+    }
+  }
+  return -1 * offset;
+}
+
+function desiredIndent(doc: Doc, lineNum: number): number {
+  const line = doc.lineAt(lineNum).text;
+  const parentIndent = findParentIndent(doc, lineNum, 0);
+  return lineStartsWithCloser(line) ? parentIndent : parentIndent + offset;
+}
+
+function editForLine(
+  doc: vscode.TextDocument,
+  lineNum: number,
+): vscode.TextEdit[] {
+  const want = desiredIndent(doc, lineNum);
+  const actual = firstSignificantCharacterIndex(doc.lineAt(lineNum).text);
+  if (actual === want) {
+    return [];
+  }
+
+  return [
+    vscode.TextEdit.replace(
+      new vscode.Range(lineNum, 0, lineNum, actual),
+      " ".repeat(want),
+    ),
+  ];
+}
+
+function hasOpeningBeforeCursor(
+  doc: vscode.TextDocument,
+  pos: vscode.Position,
+): boolean {
+  const txt = doc.lineAt(pos.line).text.slice(0, pos.character);
+
+  let i = txt.length - 1;
+  while (i >= 0 && /\s/.test(txt[i])) {
+    i--;
+  }
+  if (i < 0) {
+    return false;
+  }
+
+  const ch = txt[i];
+
+  if (ch == "=") {
+    return false;
+  }
+
+  return OPEN.has(ch);
+}
+
+const onTypeFormattingEditProvider: vscode.OnTypeFormattingEditProvider = {
+  provideOnTypeFormattingEdits(doc, pos, ch) {
+    const ln = pos.line;
+    const editList1 = editForLine(doc, ln);
+    if (ch != "\n") {
+      return editList1;
+    } else {
+      const previousLine = ln - 1;
+      const previousLineLength = doc.lineAt(previousLine).text.length;
+      let newPos = new vscode.Position(previousLine, previousLineLength);
+      if (hasOpeningBeforeCursor(doc, newPos)) {
+        const editList2 = editForLine(doc, ln + 1);
+        return editList1.concat(editList2);
+      } else {
+        return editList1;
+      }
+    }
+  },
+};
+
+let client: LanguageClient;
+
+function createLanguageClient(): LanguageClient {
+  const serverOptions: ServerOptions = {
+    command: "neut",
+    args: ["lsp"],
+  };
+
+  const clientOptions: LanguageClientOptions = {
+    documentSelector: [
+      {
+        scheme: "file",
+        language: "neut",
+      },
+    ],
+  };
+  return new LanguageClient("Neut", serverOptions, clientOptions);
 }
 
 function getCurrentLineText(editor: vscode.TextEditor): string {
   const currentLine = editor.selection.active.line;
   return editor.document.lineAt(currentLine).text;
-}
-
-function getPreviousLineText(editor: vscode.TextEditor): string | null {
-  const currentLine = editor.selection.active.line;
-  if (currentLine > 0) {
-    return editor.document.lineAt(currentLine - 1).text;
-  } else {
-    return null;
-  }
-}
-
-function getCurrentLineIndent(editor: vscode.TextEditor): number {
-  const currentLineText = getCurrentLineText(editor);
-  if (currentLineText) {
-    return getIndentation(currentLineText);
-  } else {
-    return 0;
-  }
-}
-
-function getPreviousLineIndent(editor: vscode.TextEditor): number {
-  const previousLineText = getPreviousLineText(editor);
-  if (previousLineText) {
-    return getIndentation(previousLineText);
-  } else {
-    return 0;
-  }
-}
-
-function mustIncreaseIndent(editor: vscode.TextEditor): boolean {
-  const currentLineText = getCurrentLineText(editor);
-  if (currentLineText) {
-    return indentPattern.test(currentLineText);
-  } else {
-    return false;
-  }
-}
-
-function mustDecreaseIndent(editor: vscode.TextEditor) {
-  const currentLineText = getCurrentLineText(editor);
-  return outdentPattern.test(currentLineText);
-}
-
-function mustSpreadParens(editor: vscode.TextEditor): boolean {
-  const currentPosition = editor.selection.active;
-  const closedPairOrOther = editor.document.getText(
-    new vscode.Range(
-      currentPosition.line,
-      Math.max(currentPosition.character - 1, 0),
-      currentPosition.line,
-      currentPosition.character + 1
-    )
-  );
-  return (
-    closedPairOrOther == "()" ||
-    closedPairOrOther == "{}" ||
-    closedPairOrOther == "[]"
-  );
-}
-
-function newlineAndIncreaseIndent(editor: vscode.TextEditor) {
-  const currentPosition = editor.selection.active;
-  const previousLineIndent = getPreviousLineIndent(editor);
-  editor.edit((editBuilder) => {
-    editBuilder.insert(
-      currentPosition,
-      "\n" + " ".repeat(previousLineIndent + baseOffset)
-    );
-  });
-}
-
-function decreaseIndentAndNewline(editor: vscode.TextEditor) {
-  const currentPosition = editor.selection.active;
-  if (currentPosition.line > 0) {
-    let currentIndent = getCurrentLineIndent(editor);
-    let previousIndent = getPreviousLineIndent(editor);
-    if (currentIndent == previousIndent && currentIndent >= baseOffset) {
-      const line = currentPosition.line;
-      const left = new vscode.Position(line, 0);
-      const right = new vscode.Position(line, baseOffset);
-      editor.edit((editBuilder) => {
-        editBuilder.delete(new vscode.Range(left, right));
-        editBuilder.insert(
-          currentPosition,
-          "\n" + " ".repeat(currentIndent - baseOffset)
-        );
-      });
-    } else {
-      editor.edit((editBuilder) => {
-        editBuilder.insert(currentPosition, "\n" + " ".repeat(currentIndent));
-      });
-    }
-  }
-}
-
-function spreadParens(editor: vscode.TextEditor) {
-  const currentPosition = editor.selection.active;
-  const currentIndent = getCurrentLineIndent(editor);
-  editor
-    .edit((editBuilder) => {
-      editBuilder.replace(
-        currentPosition,
-        "\n" +
-          " ".repeat(currentIndent + baseOffset) +
-          "\n" +
-          " ".repeat(currentIndent)
-      );
-    })
-    .then(() => {
-      const newPosition = new vscode.Position(
-        currentPosition.line + 1,
-        currentIndent + baseOffset
-      );
-      editor.selections = [new vscode.Selection(newPosition, newPosition)];
-    });
-}
-
-function insertNewLine(editor: vscode.TextEditor) {
-  const currentPosition = editor.selection.active;
-  const currentIndent = getCurrentLineIndent(editor);
-  editor.edit((editBuilder) => {
-    editBuilder.insert(currentPosition, "\n" + " ".repeat(currentIndent));
-  });
-}
-
-function newlineAndIndent() {
-  const editor = vscode.window.activeTextEditor;
-  if (editor) {
-    if (mustIncreaseIndent(editor)) {
-      newlineAndIncreaseIndent(editor);
-    } else if (mustDecreaseIndent(editor)) {
-      decreaseIndentAndNewline(editor);
-    } else if (mustSpreadParens(editor)) {
-      spreadParens(editor);
-    } else {
-      insertNewLine(editor);
-    }
-  }
 }
 
 function insertVerticalBar() {
@@ -189,22 +210,7 @@ function insertVerticalBar() {
   }
 }
 
-function createLanguageClient(): LanguageClient {
-  const serverOptions: ServerOptions = {
-    command: "neut",
-    args: ["lsp"],
-  };
-
-  const clientOptions: LanguageClientOptions = {
-    documentSelector: [
-      {
-        scheme: "file",
-        language: "neut",
-      },
-    ],
-  };
-  return new LanguageClient("Neut", serverOptions, clientOptions);
-}
+const TRIGGERS = ["\n", ")", "}", "]", ">", ";", "|"] as const;
 
 export function activate(context: ExtensionContext) {
   client = createLanguageClient();
@@ -212,16 +218,17 @@ export function activate(context: ExtensionContext) {
     throw e;
   });
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "extension.insertVerticalBar",
-      insertVerticalBar
-    )
+    vscode.languages.registerOnTypeFormattingEditProvider(
+      "neut",
+      onTypeFormattingEditProvider,
+      ...TRIGGERS,
+    ),
   );
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "extension.newlineAndIndent",
-      newlineAndIndent
-    )
+      "extension.insertVerticalBar",
+      insertVerticalBar,
+    ),
   );
 }
 

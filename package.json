@@ -72,11 +72,6 @@
         "key": "shift+\\",
         "command": "extension.insertVerticalBar",
         "when": "editorLangId == neut"
-      },
-      {
-        "key": "enter",
-        "command": "extension.newlineAndIndent",
-        "when": "editorTextFocus && !editorReadonly && !suggestWidgetVisible && editorLangId == neut"
       }
     ]
   }

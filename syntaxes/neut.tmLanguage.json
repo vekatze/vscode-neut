@@ -42,7 +42,7 @@
           }
         },
         {
-          "match": "(\\s|^)(attach|bind|box|case|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|in|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
+          "match": "(\\s|^)(attach|bind|box|case|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
           "name": "keyword.neut"
         },
         {
