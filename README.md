@@ -10,4 +10,4 @@ This extension adds support for the [Neut](https://vekatze.github.io/neut) progr
 
 You can find all the LSP-related features at:
 
-https://vekatze.github.io/neut/lovely-lsp-showcase.html
+https://vekatze.github.io/neut/lsp-showcase.html
