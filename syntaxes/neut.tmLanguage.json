@@ -6,6 +6,9 @@
       "include": "#comments"
     },
     {
+      "include": "#strings"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -13,9 +16,6 @@
     },
     {
       "include": "#types"
-    },
-    {
-      "include": "#strings"
     },
     {
       "include": "#operators"
@@ -26,72 +26,91 @@
       "patterns": [
         {
           "match": "//.*$",
-          "name": "comment.line.double-dash.neut"
+          "name": "comment.line.double-slash.neut"
         }
       ]
     },
     "keywords": {
       "patterns": [
         {
-          "name": "keyword",
-          "match": "(\\s|^)(data|define|inline|resource)\\s([^(:<{]+)",
+          "match": "((?<![-A-Za-z0-9_.])(?:alias|alias-opaque|constant|data|define|define-meta|inline|inline-meta|memoize|resource|rule-left|rule-right)(?![-A-Za-z0-9_.]))\\s+([^\\s:\\n({<\\[\\])}>,]+)",
+          "name": "meta.declaration.neut",
           "captures": {
-            "3": {
-              "name": "support.function"
+            "1": {
+              "name": "keyword.declaration.neut"
+            },
+            "2": {
+              "name": "entity.name.function.neut"
             }
           }
         },
         {
-          "match": "(\\s|^)(attach|bind|box|case|data|default|define|detach|do|else|else-if|exact|external|foreign|function|if|import|inline|introspect|let|letbox|letbox-T|match|nominal|of|on|pin|quote|resource|tie|try|use|when|with)(?=\\s|$)",
+          "match": "(?<![-A-Za-z0-9_.])(?:alias|alias-opaque|bind|box|case|constant|data|default|define|define-meta|else|else-if|exact|external|foreign|if|import|inline|inline-meta|introspect|let|letbox|letbox-T|lift|match|memoize|nominal|on|pack-type|pin|promote|quote|resource|rule-left|rule-right|tie|try|unbox|unpack-type|unquote|when|with)(?![-A-Za-z0-9_.])",
           "name": "keyword.neut"
         },
         {
-          "match": "(\\s|^)(assert|magic|include-text|static)(?=\\s|$)",
+          "match": "(?<![-A-Za-z0-9_.])(?:_|assert|magic|static|text-file)(?![-A-Za-z0-9_.])",
           "name": "keyword.builtin.neut"
         },
         {
-          "match": "(\\s|^)(admit)(?=\\s|$)",
-          "name": "support"
+          "match": "(?:=>>|->>|=>|->|=)",
+          "name": "keyword.operator.arrow.neut"
+        },
+        {
+          "match": "(?<![-A-Za-z0-9_.])admit(?![-A-Za-z0-9_.])",
+          "name": "invalid.deprecated.admit.neut"
+        },
+        {
+          "match": "(?<![-A-Za-z0-9_.])this(?![-A-Za-z0-9_.])",
+          "name": "constant.language.this.neut"
         }
       ]
     },
     "types": {
       "patterns": [
         {
-          "name": "support.type.neut",
-          "match": "(\\s|^)(type|thread|meta|rune|void|pointer)(?=\\s|$)"
+          "match": "(?<![-A-Za-z0-9_.])(?:pointer|rune|type|void)(?![-A-Za-z0-9_.])",
+          "name": "support.type.neut"
         }
       ]
     },
     "constructors": {
       "patterns": [
         {
-          "name": "support.type.neut",
-          "match": "(\\s|^)(_*[A-Z][^\\s(\\.]*)"
+          "match": "(?<![-A-Za-z0-9_.])_?\\.?[A-Z][-A-Za-z0-9_]*(?![-A-Za-z0-9_.])",
+          "name": "support.type.neut"
         }
       ]
     },
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.double.neut",
           "begin": "\"",
           "end": "\"",
+          "name": "string.quoted.double.neut",
           "patterns": [
             {
-              "name": "constant.character.escape.neut",
-              "match": "\\\\."
+              "match": "\\\\(?:[0tnr\"\\\\`]|u\\{[0-9A-F]+\\})",
+              "name": "constant.character.escape.neut"
+            },
+            {
+              "match": "\\\\.",
+              "name": "invalid.illegal.escape.neut"
             }
           ]
         },
         {
-          "name": "string.quoted.backtick.neut",
           "begin": "`",
           "end": "`",
+          "name": "constant.character.rune.neut",
           "patterns": [
             {
-              "name": "constant.character.escape.neut",
-              "match": "\\\\."
+              "match": "\\\\(?:[0tnr\"\\\\`]|u\\{[0-9A-F]+\\})",
+              "name": "constant.character.escape.neut"
+            },
+            {
+              "match": "\\\\.",
+              "name": "invalid.illegal.escape.neut"
             }
           ]
         }
@@ -100,8 +119,8 @@
     "operators": {
       "patterns": [
         {
-          "name": "support",
-          "match": "(->|:|=>|=|_|,|;|:|::|!|&|\\?|\\*|\\+|\\|)"
+          "match": "[\\\\*|!,:+&@?;'$^#~]",
+          "name": "keyword.operator.neut"
         }
       ]
     }
